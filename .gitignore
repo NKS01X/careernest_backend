@@ -33,3 +33,5 @@ build/Release
 .vscode
 .idea
 .eslintcache
+
+/src/generated/prisma

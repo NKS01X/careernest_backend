@@ -7,11 +7,20 @@ import { logout } from "./controllers/logout.controller.js";
 import { isLoggedIn } from "./middleware/auth.js";
 
 import type { Application, Request, Response } from 'express';
-const app: Application = express();
-const PORT = 3000;
 
+dotenv.config();
+
+const app: Application = express();
+const PORT = process.env.PORT||3000;
+/*
+
+GET /jobs        → all jobs (for students)
+GET /jobs/:id    → specific job
+
+GET /jobs/my     → jobs creates by the current user or maybe ?createdBy=me
+*/
 app.get('/', (req: Request, res: Response) => {
-  res.send('Hello, World!');
+  res.send('WELCOME TO INTERNSHILA!');
 });
 app.post("/login", login);
 app.post("/register", register);

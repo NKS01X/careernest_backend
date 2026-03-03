@@ -8,6 +8,7 @@ import { isLoggedIn } from "./middleware/auth.js";
 import { getAllJobs, getJobById, getMyJobs, createJob } from "./controllers/jobs.controller.js"
 import { isRecruiter, isStudent } from "./middleware/role.js";
 import type { Application, Request, Response } from 'express';
+import { upload } from "./middleware/upload.js";
 
 dotenv.config();
 
@@ -20,7 +21,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 // Auth Routes
 app.post("/login", login);
-app.post("/register", register);
+app.post("/register", upload.single("resume"), register);
 app.post("/logout", isLoggedIn, logout);
 
 // Job Routes

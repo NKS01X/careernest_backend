@@ -2,7 +2,17 @@ import type { Request, Response } from "express";
 import { encrypt } from "../utils/utils.js";
 import prisma from "../lib/db.js";
 import { parseResumeToJSON } from "../utils/resumeParser.js";
+/*
 
+
+Frontend part: 
+
+register karte wakt pehle role check karengey ? 
+  if student then only show the option to upload the pdf; 
+
+
+
+*/
 // parser to handle unpredictable LLM date strings
 const parseDate = (dateStr: string | null | undefined) => {
   if (!dateStr || dateStr.toLowerCase() === "null" || dateStr.toLowerCase() === "present") return null;

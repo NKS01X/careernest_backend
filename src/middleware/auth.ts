@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { User } from "../models/register.schema.js";
 import dotenv from "dotenv";
+import prisma from "../lib/db.js";
 
 dotenv.config();
 
@@ -9,7 +9,7 @@ export const isLoggedIn = async (
   req: Request & { user?: any },
   res: Response,
   next: NextFunction
-) => {
+): Promise<any> => {
   try {
     const token = req.cookies.token;
 
@@ -21,12 +21,18 @@ export const isLoggedIn = async (
       throw new Error("SECRET not defined");
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.SECRET
-    ) as { id: string };
+    const decoded = jwt.verify(token, process.env.SECRET) as { id: string };
 
-    const user = await User.findById(decoded.id).select("-pass");
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+      },
+    });
 
     if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -34,7 +40,6 @@ export const isLoggedIn = async (
 
     req.user = user;
     next();
-
   } catch {
     return res.status(401).json({ message: "Unauthorized" });
   }

@@ -1,19 +1,19 @@
 import type { Request, Response } from "express";
 import { encrypt } from "../utils/utils.js";
-import User from "../models/User.js";
+import prisma from "../lib/db.js";
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { username, email, password } = req.body;
+    const { name, email, pass, phone, role } = req.body;
 
-    if (!username || !email || !password) {
+    if (!name || !email || !pass || !phone || !role) {
       return res.status(400).json({
         success: false,
-        message: "Please provide all fields",
+        message: "Please provide all required fields (name, email, pass, phone, role)",
       });
     }
 
-    if (password.length < 6) {
+    if (pass.length < 6) {
       return res.status(400).json({
         success: false,
         message: "Password must be at least 6 characters",
@@ -22,29 +22,38 @@ export const register = async (req: Request, res: Response) => {
 
     const normalizedEmail = email.toLowerCase();
 
-    const exists = await User.findOne({
-      $or: [{ email: normalizedEmail }, { username }],
+    const exists = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: normalizedEmail },
+          { phone: phone }
+        ],
+      },
     });
 
     if (exists) {
       return res.status(409).json({
         success: false,
-        message: "User already exists",
+        message: "User with this email or phone number already exists",
       });
     }
 
-    const hashedPass = await encrypt(password);
+    const hashedPass = await encrypt(pass);
 
-    const user = await User.create({
-      username,
-      email: normalizedEmail,
-      password: hashedPass,
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email: normalizedEmail,
+        pass: hashedPass,
+        phone,
+        role,
+      },
     });
 
     return res.status(201).json({
       success: true,
-      message: "User registered",
-      userId: user._id,
+      message: "User registered successfully",
+      userId: user.id,
     });
   } catch (err) {
     console.error(err);

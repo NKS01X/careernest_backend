@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
-import { User } from "../models/register.schema.js";
+import prisma from "../lib/db.js";
 import { verifyPass } from "../utils/utils.js";
 import dotenv from "dotenv";
 
@@ -17,7 +17,9 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    const user;//fetch from db 
+    const user = await prisma.user.findUnique({
+      where: { email: email }
+    }); //fetch from db 
 
     if (!user) {
       return res.status(400).json({
@@ -35,15 +37,12 @@ export const login = async (req: Request, res: Response) => {
       });
     }
     const secret = process.env.JWT_SECRET || "FUCKU";
-    // if (!process.env.JWT_SECRET) {
-    //   throw new Error("JWT_SECRET not defined");
-    // }
 
     const token = jwt.sign(
       {
-        id: user._id,
+        id: user.id,
         email: user.email,
-        username: user.username,
+        username: user.name,
       },
       secret,
       { expiresIn: "7d" }
@@ -60,8 +59,8 @@ export const login = async (req: Request, res: Response) => {
       success: true,
       message: "Login successful",
       user: {
-        id: user._id,
-        username: user.username,
+        id: user.id,
+        username: user.name,
         email: user.email,
       },
     });

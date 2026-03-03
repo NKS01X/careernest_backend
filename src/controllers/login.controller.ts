@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import jwt, { JsonWebTokenError } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import prisma from "../lib/db.js";
 import { verifyPass } from "../utils/utils.js";
 import dotenv from "dotenv";

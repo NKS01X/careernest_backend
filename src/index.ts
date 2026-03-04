@@ -1,11 +1,13 @@
 import dotenv from "dotenv";
 import express from "express";
+import cookieParser from "cookie-parser";
 
 import { register } from "./controllers/register.controller.js";
 import { login } from "./controllers/login.controller.js";
 import { logout } from "./controllers/logout.controller.js";
 import { isLoggedIn } from "./middleware/auth.js";
 import { getAllJobs, getJobById, getMyJobs, createJob } from "./controllers/jobs.controller.js"
+import { getJobMatches } from "./controllers/matches.controller.js";
 import { isRecruiter, isStudent } from "./middleware/role.js";
 import type { Application, Request, Response } from 'express';
 import { upload } from "./middleware/upload.js";
@@ -14,7 +16,8 @@ dotenv.config();
 
 const app: Application = express();
 app.use(express.json());
-const PORT = process.env.PORT||3000;
+app.use(cookieParser());
+const PORT = process.env.PORT || 3000;
 
 app.get('/', (req: Request, res: Response) => {
   res.send('WELCOME TO Careernest!');
@@ -36,6 +39,7 @@ app.get("/jobs", getAllJobs);
 app.get("/jobs/my", isLoggedIn, getMyJobs); // Protected: needs user ID from token
 app.get("/jobs/:id", getJobById);
 app.post("/jobs", isLoggedIn, isRecruiter, createJob); // Protected: only recruiters
+app.get("/jobs/:id/matches", isLoggedIn, getJobMatches); // Manual trigger: top 5 matches
 
 /*
 

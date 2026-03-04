@@ -1,10 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  extensions = [vector]
 }
 
 enum Role {
@@ -32,13 +35,16 @@ model User {
 }
 
 model Resume {
-  id           String           @id @default(uuid())
-  user         User             @relation(fields: [userId], references: [id])
-  userId       String           @unique
-  skills       String[]         @default([])
-  projects     Project[]
-  workExp      WorkExperience[]
-  achievements String[]         @default([])
+  id                String                          @id @default(uuid())
+  user              User                            @relation(fields: [userId], references: [id])
+  userId            String                          @unique
+  skills            String[]                        @default([])
+  projects          Project[]
+  workExp           WorkExperience[]
+  achievements      String[]                        @default([])
+  embedding         Unsupported("vector(128)")?
+  location          String?
+  yearsOfExperience Int                             @default(0)
 }
 
 model Project {
@@ -62,16 +68,18 @@ model WorkExperience {
 }
 
 model Job {
-  id           String        @id @default(uuid())
-  title        String
-  company      String
-  description  String
-  location     String?
-  salary       String?
-  createdAt    DateTime      @default(now())
-  createdBy    User          @relation(fields: [createdById], references: [id])
-  createdById  String
-  applications Application[]
+  id                 String                          @id @default(uuid())
+  title              String
+  company            String
+  description        String
+  location           String?
+  salary             String?
+  requiredExperience Int                             @default(0)
+  embedding          Unsupported("vector(128)")?
+  createdAt          DateTime                        @default(now())
+  createdBy          User                            @relation(fields: [createdById], references: [id])
+  createdById        String
+  applications       Application[]
 }
 
 model Application {

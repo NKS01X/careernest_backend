@@ -35,3 +35,4 @@ build/Release
 .eslintcache
 
 /src/generated/prisma
+

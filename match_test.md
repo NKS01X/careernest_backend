@@ -10,24 +10,24 @@ Run these commands in order. The same `resume.pdf` is reused for all 3 students 
 # Student 1 — Node.js backend developer
 curl -X POST http://localhost:3000/register \
   -H "Content-Type: multipart/form-data" \
-  -F "name=Alex Backend" \
+  -F "name=Nikhil Singh" \
   -F "email=alex@student.com" \
   -F "pass=123456" \
-  -F "phone=9000000001" \
+  -F "phone=917630030967" \
   -F "role=Student" \
-  -F "resume=@resume.pdf"
+  -F "resume=@nik.pdf"
 ```
 
 ```bash
 # Student 2 — PostgreSQL focused developer
 curl -X POST http://localhost:3000/register \
   -H "Content-Type: multipart/form-data" \
-  -F "name=Priya Database" \
+  -F "name=Anuj Yadav" \
   -F "email=priya@student.com" \
   -F "pass=123456" \
-  -F "phone=9000000002" \
+  -F "phone=919518860844" \
   -F "role=Student" \
-  -F "resume=@resume.pdf"
+  -F "resume=@anuj.pdf"
 ```
 
 ```bash

@@ -15,6 +15,7 @@ interface MatchedCandidate {
     userId: string;
     name: string;
     phone: string;
+    skills: string[];
     distance: number;
 }
 
@@ -24,6 +25,7 @@ interface JobRow {
     company: string;
     location: string | null;
     requiredExperience: number;
+    skills: string[];
     embedding: string;
 }
 
@@ -43,7 +45,7 @@ const jobMatchingWorker = new Worker<JobMatchingPayload>(
 
         // Fetch the job record + embedding via raw SQL
         const jobRows = await prisma.$queryRawUnsafe<JobRow[]>(
-            `SELECT id, title, company, location, "requiredExperience", embedding::text
+            `SELECT id, title, company, location, "requiredExperience", skills, embedding::text
        FROM "Job"
        WHERE id = $1`,
             jobId
@@ -67,12 +69,14 @@ const jobMatchingWorker = new Worker<JobMatchingPayload>(
         r."userId"  AS "userId",
         u.name      AS "name",
         u.phone     AS "phone",
+        r.skills    AS "skills",
         r.embedding <=> $1::vector AS distance
       FROM "Resume" r
       JOIN "User" u ON u.id = r."userId"
       WHERE u.role = 'Student'
         AND r.embedding IS NOT NULL
         AND ($2::text IS NULL OR $2 = 'Remote' OR r.location IS NULL OR r.location = $2)
+        AND (r.embedding <=> $1::vector) <= 0.40
       ORDER BY distance ASC
       LIMIT $3
       `,
@@ -85,18 +89,42 @@ const jobMatchingWorker = new Worker<JobMatchingPayload>(
             `[JobMatchingWorker] Found ${matches.length} matching candidates for job "${job.title}"`
         );
 
+        const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+
         //  Enqueue each match for WhatsApp notification
         for (const match of matches) {
-            await whatsappNotificationQueue.add("send-notification", {
-                jobId: job.id,
-                jobTitle: job.title,
-                jobCompany: job.company,
-                jobLocation: job.location,
-                userId: match.userId,
-                userName: match.name,
-                phone: match.phone,
-                similarityScore: 1 - match.distance,
-            });
+            const similarityScore = 1 - match.distance;
+            const jobLink = `${baseUrl}/jobs/${job.id}`;
+            const similarityPercent = (similarityScore * 100).toFixed(1);
+
+            if (similarityScore >= 0.80) {
+                // PERFECT_FIT
+                const message = `🚀 Hey ${match.name}! You're a ${similarityPercent}% match for a new ${job.title} role at ${job.company}. Your profile looks like a great fit. Tap here to view and apply: ${jobLink}`;
+
+                await whatsappNotificationQueue.add("send-notification", {
+                    type: "PERFECT_FIT",
+                    userId: match.userId,
+                    userName: match.name,
+                    phone: match.phone,
+                    message: message
+                });
+            } else if (similarityScore >= 0.60) {
+                // UPSKILL_OPPORTUNITY
+                // Find missing skills (case-insensitive)
+                const candidateSkillsLower = (match.skills || []).map(s => s.toLowerCase());
+                const missingSkillsAll = (job.skills || []).filter(s => !candidateSkillsLower.includes(s.toLowerCase()));
+                const missingSkills = missingSkillsAll.slice(0, 3).join(", ");
+
+                const message = `💡 Hey ${match.name}! A ${job.title} role just opened at ${job.company}. You're a strong candidate, but they are specifically looking for experience with: ${missingSkills || "certain technologies"}. Consider brushing up on these to boost your chances! Tap here to view the job: ${jobLink}`;
+
+                await whatsappNotificationQueue.add("send-notification", {
+                    type: "UPSKILL_OPPORTUNITY",
+                    userId: match.userId,
+                    userName: match.name,
+                    phone: match.phone,
+                    message: message
+                });
+            }
         }
 
         console.log(

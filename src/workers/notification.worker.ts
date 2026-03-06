@@ -4,14 +4,11 @@ import { connection } from "../lib/queue.js";
 import { sendWhatsAppMessage } from "../services/whatsapp.service.js";
 
 interface NotificationPayload {
-    jobId: string;
-    jobTitle: string;
-    jobCompany: string;
-    jobLocation: string | null;
+    type: string;
     userId: string;
     userName: string;
     phone: string;
-    similarityScore: number;
+    message: string;
 }
 
 /**
@@ -25,33 +22,15 @@ const notificationWorker = new Worker<NotificationPayload>(
     "whatsapp-notification-queue",
     async (bullJob: BullJob<NotificationPayload>) => {
         const {
-            jobTitle,
-            jobCompany,
-            jobLocation,
+            type,
             userName,
             phone,
-            similarityScore,
+            message,
         } = bullJob.data;
 
         console.log(
-            `[NotificationWorker] Sending notification to ${userName} (${phone}) for "${jobTitle}"`
+            `[NotificationWorker] Sending ${type} notification to ${userName} (${phone})`
         );
-
-        const message = [
-            `🚀 *New Job Match for You!*`,
-            ``,
-            `Hi ${userName},`,
-            ``,
-            `We found a job that matches your profile:`,
-            ``,
-            `📌 *${jobTitle}* at *${jobCompany}*`,
-            jobLocation ? `📍 Location: ${jobLocation}` : null,
-            `🎯 Match Score: ${(similarityScore * 100).toFixed(1)}%`,
-            ``,
-            `Apply now on Careernest!`,
-        ]
-            .filter(Boolean)
-            .join("\n");
 
         const result = await sendWhatsAppMessage(phone, message);
 

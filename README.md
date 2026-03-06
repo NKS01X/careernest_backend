@@ -51,8 +51,8 @@ _Connecting the right students to the right opportunities — intelligently._
            ┌───────────────────┼───────────────────┐
            │                   │                   │
    ┌───────▼───────┐  ┌───────▼───────┐  ┌───────▼───────┐
-   │   Prisma ORM   │  │  BullMQ Queue │  │ Grok/xAI API  │
-   │  (PostgreSQL)  │  │ (Upstash Redis)│  │ (Embeddings)  │
+   │   Prisma ORM   │  │  BullMQ Queue │  │ Groq & JinaAI │
+   │  (PostgreSQL)  │  │ (Upstash Redis)│  │ (AI & Vectors)│
    └───────┬───────┘  └───────┬───────┘  └───────────────┘
            │                   │
    ┌───────▼───────┐  ┌───────▼──────────────────┐
@@ -73,23 +73,23 @@ _Connecting the right students to the right opportunities — intelligently._
 
 ### 📄 Smart Resume Parsing
 - **PDF upload** support via Multer
-- **AI-powered resume parsing** — extracts skills, projects, work experience, and achievements from uploaded PDFs using an LLM
+- **AI-powered resume parsing** — extracts skills, projects, work experience, and achievements from uploaded PDFs using **Groq LLM (`llama-3.3-70b-versatile`)**
 - Automatically parses unstructured date formats from LLM output
 
 ### 💼 Job Management
 - Recruiters can **create and manage** job postings
 - Students can **browse all jobs** or view specific job details
-- Each job stores a **vector embedding** of its description for semantic matching
+- Each job stores a **768-dimensional vector embedding** of its description for semantic matching
 
 ### 🤖 AI-Powered Job Matching
-- **Vector embeddings** generated via the xAI (Grok) Embeddings API
-- **Cosine similarity search** powered by `pgvector` on PostgreSQL
+- **Vector embeddings** generated via the **Jina AI Embeddings API** (`jina-embeddings-v2-base-en`)
+- **Cosine similarity search** powered by `pgvector` on PostgreSQL (calculated as `1 - (resume.embedding <=> job.embedding) AS similarity`)
 - **Hard constraint filtering** (location, experience, role) applied _before_ ranking — ensuring efficient index usage
 - Returns the **top N most relevant candidates** per job posting
 
 ### 📲 Notification Pipeline
 - **BullMQ background workers** process matches asynchronously
-- **WhatsApp notifications** sent to matched candidates (mock implementation, ready for Twilio/Meta API)
+- **WhatsApp notifications** sent automatically via `whatsapp-web.js` to matched candidates, complete with local QR code session management (`.wwebjs_auth`)
 - **Rate-limited worker** with exponential backoff for production readiness
 - Workers run via **Upstash Redis** for serverless-friendly queue management
 
@@ -97,6 +97,10 @@ _Connecting the right students to the right opportunities — intelligently._
 - **Unit tests** for services, middleware, and utilities
 - **Integration tests** for auth flows and API endpoints
 - **Test coverage** reporting via `@vitest/coverage-v8`
+
+### 🚀 Automation & Deployment
+- **Dockerized architecture** with multi-stage builds (`Dockerfile`)
+- **Railway deployment config** out-of-the-box (`railway.toml`) supporting multiple services natively
 
 ---
 
@@ -154,7 +158,7 @@ internship_placement/
 | **ORM**        | Prisma 6 (with preview `postgresqlExtensions`) |
 | **Database**   | PostgreSQL + `pgvector` extension    |
 | **Queue**      | BullMQ + Upstash Redis (`rediss://`) |
-| **AI/ML**      | xAI (Grok) Embeddings API via OpenAI SDK |
+| **AI/ML**      | Groq LLM (Parse) & Jina AI (Embeddings) |
 | **Auth**       | JWT (`jsonwebtoken`) + bcrypt        |
 | **File Upload**| Multer (PDF resume parsing)          |
 | **PDF Parsing**| `pdf-parse`                          |
@@ -175,7 +179,7 @@ internship_placement/
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/<your-username>/internship_placement.git
+git clone https://github.com/Nikhil/internship_placement.git
 cd internship_placement
 npm install
 ```
@@ -309,8 +313,8 @@ sequenceDiagram
     NW->>S: Send WhatsApp message
 ```
 
-1. **Recruiter creates a job** → An embedding is generated from the job description via xAI.
-2. **Job Matching Worker** picks up the task, runs a **pgvector cosine similarity** query against all student resume embeddings, applying hard constraints (location, experience level) first.
+1. **Recruiter creates a job** → A 768-dim embedding is generated from the job description via Jina AI.
+2. **Job Matching Worker** picks up the task, runs a **pgvector cosine similarity** query (using the `<=>` operator for distance) against all student resume embeddings, applying hard constraints (location, experience level) first.
 3. **Top N matches** are enqueued as notification tasks.
 4. **Notification Worker** sends WhatsApp messages to matched students with job details and a similarity score.
 
@@ -432,7 +436,7 @@ This project is licensed under the **ISC License**.
 
 <div align="center">
 
-_Built with ❤️ for smarter placements._
+_Built with ❤️ by Nikhil for smarter placements._
 
 **[⬆ Back to Top](#-careernest)**
 

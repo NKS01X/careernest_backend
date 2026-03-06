@@ -72,11 +72,11 @@ curl -X POST http://localhost:3000/jobs \
   -H "Content-Type: application/json" \
   -b cookies-recruiter.txt \
   -d '{
-    "title": "Backend Node.js Engineer",
-    "company": "InnoTech",
-    "description": "Expert Node.js backend engineer needed. Must know PostgreSQL, Prisma, and RESTful API design.",
+    "title": "Backend Software Engineer",
+    "company": "Nexus Systems",
+    "description": "We are seeking a high-performance Backend Software Engineer to architect scalable platforms. The ideal candidate must have deep expertise in building RESTful APIs using Node.js and Express. Strong database management skills with MongoDB or PostgreSQL are required, along with experience implementing secure, stateless JWT authentication. Candidates must have a strong foundation in Data Structures, Algorithms, and problem-solving, preferably utilizing C++. Experience with containerization (Docker) and systems-level programming languages like Rust or Go is a massive plus for optimizing low-latency execution.",
     "location": "Remote",
-    "salary": "18-25 LPA",
+    "salary": "15-22 LPA",
     "requiredExperience": 0
   }'
 ```

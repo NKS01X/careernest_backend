@@ -8,11 +8,20 @@ export async function sendWhatsAppMessage(
     phone: string,
     message: string
 ): Promise<{ success: boolean; messageId: string }> {
-    const chatId = `${phone}@c.us`;
-    const result = await client.sendMessage(chatId, message);
+    // Strip non-digit characters (e.g. +, -, spaces)
+    const sanitized = phone.replace(/\D/g, "");
+    const chatId = `${sanitized}@c.us`;
 
-    const messageId = result.id?.id ?? `wa_${Date.now()}`;
-    console.log(`[WhatsApp] Message sent to ${phone} | messageId: ${messageId}`);
+    try {
+        const info = client.info;  // throws if not ready
+        if (!info) throw new Error("Client not ready");
 
-    return { success: true, messageId };
+        const result = await client.sendMessage(chatId, message);
+        const messageId = result.id?.id ?? `wa_${Date.now()}`;
+        console.log(`[WhatsApp] Message sent to ${sanitized} | messageId: ${messageId}`);
+        return { success: true, messageId };
+    } catch (err) {
+        console.error(`[WhatsApp] Failed to send message to ${sanitized}:`, err);
+        throw err;
+    }
 }

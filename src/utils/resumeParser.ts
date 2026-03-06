@@ -1,11 +1,11 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const pdf = require("pdf-parse");
+const pdf: (buf: Buffer) => Promise<{ text: string }> = require("pdf-parse");
 import OpenAI from "openai";
 
 const grok = new OpenAI({
-  apiKey: process.env.GROK_API, 
-  baseURL: "https://api.x.ai/v1",
+  apiKey: process.env.GROQ_API || "",
+  baseURL: "https://api.groq.com/openai/v1",
 });
 
 export const parseResumeToJSON = async (pdfBuffer: Buffer) => {
@@ -42,13 +42,13 @@ export const parseResumeToJSON = async (pdfBuffer: Buffer) => {
   `;
 
   const response = await grok.chat.completions.create({
-    model: "grok-2-latest", 
+    model: "llama-3.3-70b-versatile",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: `Resume text:\n\n${rawText}` }
     ],
-    response_format: { type: "json_object" }, 
-    temperature: 0.1, 
+    response_format: { type: "json_object" },
+    temperature: 0.1,
   });
 
   const responseText = response.choices[0]?.message?.content;

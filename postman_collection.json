@@ -1,0 +1,318 @@
+{
+    "info": {
+        "name": "CareerNest API QA (Auto-Run)",
+        "description": "Collection with built-in variables and auto-extraction scripts. Just click Run!",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. Auth",
+            "item": [
+                {
+                    "name": "Register Student",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "name",
+                                    "value": "Test Student",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "email",
+                                    "value": "{{student_email}}",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "pass",
+                                    "value": "123456",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "phone",
+                                    "value": "9998887771",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "role",
+                                    "value": "Student",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "resume",
+                                    "type": "file",
+                                    "src": [],
+                                    "description": "SELECT A PDF FILE HERE BEFORE RUNNING!"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Register Recruiter",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "name",
+                                    "value": "Test Recruiter",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "email",
+                                    "value": "{{recruiter_email}}",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "pass",
+                                    "value": "123456",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "phone",
+                                    "value": "9998887772",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "role",
+                                    "value": "Recruiter",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Login (Student)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{student_email}}\",\n  \"pass\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Login (Recruiter)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{recruiter_email}}\",\n  \"pass\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/logout",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "logout"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "2. Jobs",
+            "item": [
+                {
+                    "name": "List All Jobs",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/jobs",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "jobs"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Job",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "let res = pm.response.json();",
+                                    "if (res && res.job && res.job.id) {",
+                                    "    pm.collectionVariables.set(\"job_id\", res.job.id);",
+                                    "    console.log(\"Saved job_id: \" + res.job.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Fullstack Node.js Developer\",\n  \"company\": \"Acme Corp\",\n  \"description\": \"Looking for strong Node.js backend developer.\",\n  \"location\": \"Remote\",\n  \"salary\": \"$100k\",\n  \"requiredExperience\": 3\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/jobs",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "jobs"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Specific Job",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/jobs/{{job_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "jobs",
+                                "{{job_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Jobs",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/jobs/my",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "jobs",
+                                "my"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "3. Matches",
+            "item": [
+                {
+                    "name": "Trigger Job Matches",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/jobs/{{job_id}}/matches",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "jobs",
+                                "{{job_id}}",
+                                "matches"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:3000",
+            "type": "string"
+        },
+        {
+            "key": "student_email",
+            "value": "tester_student@test.com",
+            "type": "string"
+        },
+        {
+            "key": "recruiter_email",
+            "value": "tester_recruiter@test.com",
+            "type": "string"
+        },
+        {
+            "key": "job_id",
+            "value": "will-be-auto-filled",
+            "type": "string"
+        }
+    ]
+}

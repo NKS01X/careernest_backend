@@ -42,7 +42,7 @@ model Resume {
   projects          Project[]
   workExp           WorkExperience[]
   achievements      String[]                        @default([])
-  embedding         Unsupported("vector(128)")?
+  embedding         Unsupported("vector(768)")?
   location          String?
   yearsOfExperience Int                             @default(0)
 }
@@ -75,7 +75,7 @@ model Job {
   location           String?
   salary             String?
   requiredExperience Int                             @default(0)
-  embedding          Unsupported("vector(128)")?
+  embedding          Unsupported("vector(768)")?
   createdAt          DateTime                        @default(now())
   createdBy          User                            @relation(fields: [createdById], references: [id])
   createdById        String

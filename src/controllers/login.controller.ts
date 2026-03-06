@@ -36,7 +36,7 @@ export const login = async (req: Request, res: Response) => {
         message: "Wrong Credentials",
       });
     }
-    const secret = process.env.JWT_SECRET || "FUCKU";
+    const secret = process.env.SECRET || "careernest_dev_secret";
 
     const token = jwt.sign(
       {

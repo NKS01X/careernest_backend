@@ -1,22 +1,15 @@
-import IORedis from "ioredis";
+import { Redis } from "ioredis";
+const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
 
-/**
- * Shared Redis connection for BullMQ.
- *
- * Upstash Redis requirements:
- * - Uses `rediss://` (TLS) connection strings.
- * - `maxRetriesPerRequest: null` is required for BullMQ compatibility.
- * - `tls: {}` enables TLS when the URL scheme is `rediss://`.
- */
-const redisUrl = process.env.REDIS_URL || "rediss://localhost:6379";
-
-const connection = new IORedis.default(redisUrl, {
+const connection = new Redis(redisUrl, {
     maxRetriesPerRequest: null,
-    tls: redisUrl.startsWith("rediss://") ? {} : undefined,
+    enableReadyCheck: false,
+    family: 4,
+    tls: redisUrl.startsWith("rediss://") ? { rejectUnauthorized: false } : undefined
 });
 
 connection.on("connect", () => {
-    console.log("[Redis] Connected to Upstash Redis");
+    console.log("[Redis] Connected");
 });
 
 connection.on("error", (err: Error) => {

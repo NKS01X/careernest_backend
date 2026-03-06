@@ -2,17 +2,8 @@ import type { Request, Response } from "express";
 import { encrypt } from "../utils/utils.js";
 import prisma from "../lib/db.js";
 import { parseResumeToJSON } from "../utils/resumeParser.js";
-/*
+import { generateEmbedding } from "../services/embedding.service.js";
 
-
-Frontend part: 
-
-register karte wakt pehle role check karengey ? 
-  if student then only show the option to upload the pdf; 
-
-
-
-*/
 // parser to handle unpredictable LLM date strings
 const parseDate = (dateStr: string | null | undefined) => {
   if (!dateStr || dateStr.toLowerCase() === "null" || dateStr.toLowerCase() === "present") return null;
@@ -44,9 +35,8 @@ export const register = async (req: Request & { file?: any }, res: Response): Pr
 
     const hashedPass = await encrypt(pass);
 
-    let resumePayload: any; 
+    let resumePayload: any;
 
-    // Isolate LLM processing and nested payload generation to Students only
     if (role === "Student") {
       if (!req.file) {
         return res.status(400).json({ success: false, message: "Students must upload a resume PDF" });
@@ -81,7 +71,32 @@ export const register = async (req: Request & { file?: any }, res: Response): Pr
         role,
         ...(resumePayload && { resume: resumePayload }),
       },
+      include: { resume: true },
     });
+
+    // Generate and store resume embedding for Students
+    if (role === "Student" && user.resume) {
+      try {
+        const resumeText = [
+          ...(user.resume.skills || []),
+          ...(user.resume.achievements || []),
+        ].join(". ");
+
+        const embedding = await generateEmbedding(resumeText || name);
+        const embeddingStr = `[${embedding.join(",")}]`;
+
+        await prisma.$executeRawUnsafe(
+          `UPDATE "Resume" SET embedding = $1::vector WHERE id = $2`,
+          embeddingStr,
+          user.resume.id
+        );
+
+        console.log(`[Register] Generated ${embedding.length}-dim embedding for ${name}'s resume`);
+      } catch (embedErr) {
+        console.error("[Register] Resume embedding failed (non-fatal):", embedErr);
+        // Don't block registration if embedding fails
+      }
+    }
 
     return res.status(201).json({
       success: true,

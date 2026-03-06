@@ -1,12 +1,11 @@
-import { Client, LocalAuth } from "whatsapp-web.js";
+import pkg from "whatsapp-web.js";
+const { Client, LocalAuth } = pkg;
 
 /**
  * Singleton whatsapp-web.js client.
- *
- * Uses LocalAuth so the session is persisted to disk under
- * `.wwebjs_auth/` – after a one-time QR scan the client
- * will reconnect automatically on subsequent starts.
  */
+export let isClientReady = false;
+
 export const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -28,6 +27,7 @@ client.on("qr", (qr) => {
 });
 
 client.on("ready", () => {
+    isClientReady = true;
     console.log("[WhatsApp] Client is ready!");
 });
 
@@ -40,5 +40,12 @@ client.on("auth_failure", (msg) => {
 });
 
 client.on("disconnected", (reason) => {
+    isClientReady = false;
     console.warn("[WhatsApp] Disconnected:", reason);
+});
+
+// Start initialization
+console.log("[WhatsApp] Initializing client...");
+client.initialize().catch(err => {
+    console.error("[WhatsApp] Initialization failed:", err);
 });

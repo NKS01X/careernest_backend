@@ -19,11 +19,13 @@ export const client = new Client({
     },
 });
 
+import qrcode from "qrcode-terminal";
+
 /* ── lifecycle logging ─────────────────────────────────── */
 
 client.on("qr", (qr) => {
     console.log("[WhatsApp] Scan this QR code to authenticate:");
-    console.log(qr);
+    qrcode.generate(qr, { small: true });
 });
 
 client.on("ready", () => {

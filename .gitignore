@@ -8,7 +8,6 @@ logs
 *.log
 npm-debug.log*
 yarn-debug.log*
-lerna-debug.log*
 
 # Runtime data
 pids
@@ -17,22 +16,35 @@ pids
 *.pid.lock
 .nyc_output
 
-# Build/Coverage
-coverage
-dist
-build/Release
-.next
-.nuxt
-.cache
+# Build / Compiled output
+dist/
+build/
+coverage/
+*.js.map
+*.d.ts.map
 
 # Environment
 .env
-.env.test
+.env.*
 
-# IDE/Tools
-.vscode
-.idea
-.eslintcache
+# WhatsApp session & cache (contains auth tokens + Chromium — never commit)
+.wwebjs_auth/
+.wwebjs_cache/
 
+# Prisma generated
 /src/generated/prisma
 
+# IDE / Tools
+.vscode/
+.idea/
+.eslintcache
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+cookies*.txt
+
+# Uploaded files
+uploads/

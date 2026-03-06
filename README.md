@@ -167,9 +167,10 @@ internship_placement/
 ### Prerequisites
 
 - **Node.js** ≥ 18
-- **PostgreSQL** with the [`pgvector`](https://github.com/pgvector/pgvector) extension enabled
+- **PostgreSQL** with the [`pgvector`](https://github.com/pgvector/pgvector) extension enabled (recommended: [Neon](https://neon.tech/))
 - **Redis** instance (recommended: [Upstash](https://upstash.com/) for serverless)
-- **xAI API key** for embedding generation
+- **Groq API key** for LLM-based resume parsing
+- **HuggingFace API key** for embedding generation
 
 ### 1. Clone & Install
 
@@ -184,20 +185,22 @@ npm install
 Create a `.env` file in the project root:
 
 ```env
-# Database
-DATABASE_URL="postgresql://user:password@host:5432/careernest"
-DIRECT_URL="postgresql://user:password@host:5432/careernest"
+# Database (Neon PostgreSQL with pgvector)
+DATABASE_URL="postgresql://user:pass@host-pooler.region.aws.neon.tech/dbname?sslmode=require"
+DIRECT_URL="postgresql://user:pass@host.region.aws.neon.tech/dbname?sslmode=require"
 
-# Redis (Upstash)
-UPSTASH_REDIS_URL="rediss://default:your-token@your-endpoint.upstash.io:6379"
+# Redis (Upstash — rediss:// for TLS)
+REDIS_URL="rediss://default:your-token@your-endpoint.upstash.io:6379"
 
-# AI Embeddings
-GROK_API="your-xai-api-key"
+# AI / LLM
+GROQ_API="your-groq-api-key"
+HF_API_KEY="your-huggingface-api-key"
+JINA_API_KEY="your-jina-api-key"
 
 # Auth
-JWT_SECRET="your-jwt-secret"
+SECRET="your-jwt-secret"
 
-# Server
+# Server (optional)
 PORT=3000
 ```
 
@@ -216,15 +219,28 @@ npm run seed
 
 ### 4. Start the Server
 
-```bash
-# Development mode (hot-reload)
-npm run dev
+You need **two terminals** running:
 
-# Start background workers (in a separate terminal)
+```bash
+# Terminal 1: Start the API server (hot-reload)
+npm run dev
+```
+
+```bash
+# Terminal 2: Start background workers (job matching + WhatsApp notifications)
 npm run workers
 ```
 
 The API will be available at `http://localhost:3000`.
+
+### 5. WhatsApp Setup (First time)
+
+When the workers start, a **QR code** will appear in the terminal. Scan it with WhatsApp:
+
+1. Open WhatsApp on your phone
+2. Go to **Settings → Linked Devices → Link a Device**
+3. Scan the QR code from the terminal
+4. The session is saved locally in `.ww_auth/` — you won't need to scan again unless the session expires
 
 ---
 
@@ -312,6 +328,89 @@ The database is structured around five core models:
 | **Project**        | Student projects (linked to Resume)            |
 | **WorkExperience** | Work history entries (linked to Resume)        |
 | **Application**    | Tracks student applications to jobs            |
+
+---
+
+## 🚀 Deployment (Railway)
+
+### Prerequisites
+
+- A [Railway](https://railway.app/) account
+- Your project pushed to a **GitHub repository**
+- WhatsApp authenticated locally (`.ww_auth/` session folder exists)
+
+### Architecture on Railway
+
+You need **two services** from the same repo:
+
+| Service | Start Command | Purpose |
+| ------- | ------------- | ------- |
+| **api** | `npm start` | Express REST API server |
+| **workers** | `npm run start:workers` | BullMQ job matching + WhatsApp notifications |
+
+### Step-by-Step
+
+#### 1. Build Locally First
+
+```bash
+npm run build
+```
+
+This runs `prisma generate` + `tsc`, compiling TypeScript to `dist/`.
+
+#### 2. Create Railway Project
+
+1. Go to [railway.app](https://railway.app/) → **New Project**
+2. Select **Deploy from GitHub Repo** → choose your repository
+3. Railway will auto-detect the `Dockerfile` and build the image
+
+#### 3. Set Environment Variables
+
+In Railway dashboard → **Variables**, add all your `.env` variables:
+
+```
+REDIS_URL=rediss://default:token@endpoint.upstash.io:6379
+DATABASE_URL=postgresql://...
+DIRECT_URL=postgresql://...
+GROQ_API=your-key
+HF_API_KEY=your-key
+JINA_API_KEY=your-key
+SECRET=your-jwt-secret
+PORT=3000
+PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+```
+
+#### 4. Create the Workers Service
+
+1. In the same Railway project, click **+ New** → **GitHub Repo** → same repository
+2. Rename this service to `workers`
+3. In **Settings → Deploy**, set the **Start Command** to: `npm run start:workers`
+4. Copy the same environment variables to this service
+5. **Attach a Volume** at mount path `/app/.ww_auth` for WhatsApp session persistence
+
+#### 5. WhatsApp Session
+
+Since you can't scan a QR code on Railway:
+
+1. **Authenticate locally first** by running `npm run workers` and scanning the QR code
+2. A `.ww_auth/` folder will be created in your project root
+3. Upload the contents to the Railway volume attached to the workers service
+
+#### 6. Deploy
+
+Push to your GitHub `main` branch — Railway will automatically build and deploy both services.
+
+```bash
+git add .
+git commit -m "Add Railway deployment config"
+git push origin main
+```
+
+### Verify Deployment
+
+- **Health check:** `curl https://<your-app>.railway.app/` → should return `WELCOME TO Careernest!`
+- **Railway logs:** Check for `[Redis] Connected` and `[WhatsApp] Client connected and ready`
+- **Test API:** Run curl commands against your Railway URL instead of `localhost:3000`
 
 ---
 

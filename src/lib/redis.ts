@@ -1,11 +1,27 @@
 import { Redis } from "ioredis";
-const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+import dotenv from "dotenv";
+dotenv.config();
+
+const redisUrl = process.env.REDIS_URL;
+if (!redisUrl) {
+    throw new Error("REDIS_URL is not set in .env — cannot connect to Redis");
+}
 
 const connection = new Redis(redisUrl, {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
     family: 4,
-    tls: redisUrl.startsWith("rediss://") ? { rejectUnauthorized: false } : undefined
+    tls: redisUrl.startsWith("rediss://") ? { rejectUnauthorized: false } : undefined,
+    retryStrategy(times: number) {
+        const delay = Math.min(times * 200, 5000);
+        console.log(`[Redis] Reconnecting in ${delay}ms (attempt ${times})`);
+        return delay;
+    },
+    reconnectOnError(err: Error) {
+        console.log("[Redis] Reconnecting due to error:", err.message);
+        return true;
+    },
+    keepAlive: 30000,
 });
 
 connection.on("connect", () => {

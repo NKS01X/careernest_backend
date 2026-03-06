@@ -72,14 +72,12 @@ const jobMatchingWorker = new Worker<JobMatchingPayload>(
       JOIN "User" u ON u.id = r."userId"
       WHERE u.role = 'Student'
         AND r.embedding IS NOT NULL
-        AND ($2::text IS NULL OR r.location = $2)
-        AND r."yearsOfExperience" >= $3
+        AND ($2::text IS NULL OR $2 = 'Remote' OR r.location IS NULL OR r.location = $2)
       ORDER BY distance ASC
-      LIMIT $4
+      LIMIT $3
       `,
             job.embedding,
             job.location ?? null,
-            job.requiredExperience,
             top_cand
         );
 

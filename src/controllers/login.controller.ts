@@ -43,6 +43,7 @@ export const login = async (req: Request, res: Response) => {
         id: user.id,
         email: user.email,
         username: user.name,
+        role: user.role,
       },
       secret,
       { expiresIn: "7d" }
@@ -50,8 +51,8 @@ export const login = async (req: Request, res: Response) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -60,8 +61,9 @@ export const login = async (req: Request, res: Response) => {
       message: "Login successful",
       user: {
         id: user.id,
-        username: user.name,
+        name: user.name,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (err) {

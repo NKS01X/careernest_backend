@@ -3,6 +3,7 @@ import { encrypt } from "../utils/utils.js";
 import prisma from "../lib/db.js";
 import { parseResumeToJSON } from "../utils/resumeParser.js";
 import { generateEmbedding } from "../services/embedding.service.js";
+import jwt from "jsonwebtoken";
 
 // parser to handle unpredictable LLM date strings
 const parseDate = (dateStr: string | null | undefined) => {
@@ -107,10 +108,35 @@ export const register = async (req: Request & { file?: any }, res: Response): Pr
       }
     }
 
+    const secret = process.env.SECRET || "careernest_dev_secret";
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        username: user.name,
+        role: user.role,
+      },
+      secret,
+      { expiresIn: "7d" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
-      userId: user.id,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        resume: user.resume,
+      },
     });
 
   } catch (err) {

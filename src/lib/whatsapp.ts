@@ -21,16 +21,25 @@ export const client = new Client({
         backupSyncIntervalMs: 300000,
     }),
     puppeteer: {
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
         headless: true,
         args: [
             "--no-sandbox",
             "--disable-setuid-sandbox",
             "--disable-dev-shm-usage",
-            "--disable-accelerated-2d-canvas",
+            "--disable-gpu",
             "--no-first-run",
             "--no-zygote",
-            "--disable-gpu",
+            "--single-process",        // ← key flag for low memory
+            "--disable-extensions",
+            "--disable-background-networking",
+            "--disable-default-apps",
+            "--disable-sync",
+            "--disable-translate",
+            "--hide-scrollbars",
+            "--metrics-recording-only",
+            "--mute-audio",
+            "--safebrowsing-disable-auto-update",
         ],
     },
 });

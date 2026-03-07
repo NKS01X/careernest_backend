@@ -1,7 +1,8 @@
 import pkg from "whatsapp-web.js";
 const { Client, RemoteAuth } = pkg;
 import { Pool } from "pg";
-import PostgresStore from "wwebjs-postgres";
+import wwebjsPkg from "wwebjs-postgres";
+const { PostgresStore } = wwebjsPkg as any;
 import * as qrcode from "qrcode";
 
 // Connect to your existing Render PostgreSQL

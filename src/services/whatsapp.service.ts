@@ -1,4 +1,5 @@
 import pkg from 'whatsapp-web.js';
+import qrcode from 'qrcode-terminal';
 const { Client, LocalAuth } = pkg;
 
 /**
@@ -28,6 +29,7 @@ export let isClientReady = false;
 client.on('qr', (qr) => {
     // In production/Railway, check logs to see the QR link or use a terminal QR library
     console.log('[WhatsApp] QR RECEIVED', qr);
+    qrcode.generate(qr, { small: true });
 });
 
 client.on('ready', () => {
@@ -67,7 +69,6 @@ export async function sendWhatsAppMessage(
     try {
         const result = await client.sendMessage(chatId, message);
         const messageId = result.id?.id ?? `wa_${Date.now()}`;
-
         console.log(`[WhatsApp] Message sent to ${cleanPhone} | ID: ${messageId}`);
         return { success: true, messageId };
     } catch (error) {

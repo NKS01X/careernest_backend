@@ -268,6 +268,12 @@ When the workers start, a **QR code** will appear in the terminal. Scan it with 
 | POST   | `/jobs`             | ✅   | Recruiter | Create a new job posting        |
 | GET    | `/jobs/:id/matches` | ✅   | Any       | Get top matching candidates     |
 
+### Analytics
+
+| Method | Endpoint        | Auth | Role          | Description                                     |
+| ------ | --------------- | ---- | ------------- | ----------------------------------------------- |
+| GET    | `/analytics/me` | ✅   | Stud. / Recr. | Fetch user-specific analytics directly from DB  |
+
 ---
 
 ## 🧪 Testing

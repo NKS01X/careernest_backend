@@ -13,14 +13,23 @@ const parseDate = (dateStr: string | null | undefined) => {
 
 export const register = async (req: Request & { file?: any }, res: Response): Promise<any> => {
   try {
-    const { name, email, pass, phone, role } = req.body;
+    const { name, email, role } = req.body;
+    const pass = req.body.pass || req.body.password;
+    const phone = req.body.phone ? String(req.body.phone) : undefined;
 
     if (!name || !email || !pass || !phone || !role) {
       return res.status(400).json({ success: false, message: "Please provide all required fields" });
     }
 
-    if (pass.length < 6) {
+    if (String(pass).length < 6) {
       return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+    }
+
+    let userRole = role;
+    if (typeof role === 'string') {
+      const lower = role.toLowerCase();
+      if (lower === 'student') userRole = 'Student';
+      if (lower === 'recruiter') userRole = 'Recruiter';
     }
 
     const normalizedEmail = email.toLowerCase();
@@ -37,20 +46,20 @@ export const register = async (req: Request & { file?: any }, res: Response): Pr
 
     let resumePayload: any;
 
-    if (role === "Student") {
+    if (userRole === "Student") {
       if (!req.file) {
         return res.status(400).json({ success: false, message: "Students must upload a resume PDF" });
       }
 
       const resumeData = await parseResumeToJSON(req.file.buffer);
 
-      const formattedWorkExp = resumeData.workExp.map((exp: any) => ({
+      const formattedWorkExp = resumeData.workExp?.map((exp: any) => ({
         company: exp.company,
         role: exp.role,
         description: exp.description,
         startDate: parseDate(exp.startDate) || new Date(),
         endDate: parseDate(exp.endDate),
-      }));
+      })) || [];
 
       resumePayload = {
         create: {
@@ -68,14 +77,14 @@ export const register = async (req: Request & { file?: any }, res: Response): Pr
         email: normalizedEmail,
         pass: hashedPass,
         phone,
-        role,
+        role: userRole as "Student" | "Recruiter",
         ...(resumePayload && { resume: resumePayload }),
       },
       include: { resume: true },
     });
 
     // Generate and store resume embedding for Students
-    if (role === "Student" && user.resume) {
+    if (userRole === "Student" && user.resume) {
       try {
         const resumeText = [
           ...(user.resume.skills || []),

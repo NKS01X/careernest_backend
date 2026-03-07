@@ -3,7 +3,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 
 import { register } from "./controllers/register.controller.js";
-import { login } from "./controllers/login.controller.js";
+import { login, getCurrentUser } from "./controllers/login.controller.js";
 import { logout } from "./controllers/logout.controller.js";
 import { isLoggedIn } from "./middleware/auth.js";
 import { getAllJobs, getJobById, getMyJobs, createJob } from "./controllers/jobs.controller.js"
@@ -41,6 +41,7 @@ GET /jobs/:id    → specific job
 GET /jobs/my     → jobs creates by the current user or maybe ?createdBy=me
 */
 // Job Routes
+app.get("/me", isLoggedIn, getCurrentUser);
 app.get("/jobs", getAllJobs);
 app.get("/jobs/my", isLoggedIn, getMyJobs);              // ✅ specific first
 app.get("/jobs/:id/matches", isLoggedIn, getJobMatches); // ✅ more specific before :id

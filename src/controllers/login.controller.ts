@@ -5,7 +5,9 @@ import { verifyPass } from "../utils/utils.js";
 import dotenv from "dotenv";
 
 dotenv.config();
-
+export const getCurrentUser = (req: any, res: Response) => {
+  res.status(200).json({ success: true, user: req.user });
+};
 export const login = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;

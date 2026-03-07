@@ -40,11 +40,12 @@ GET /jobs/:id    → specific job
 
 GET /jobs/my     → jobs creates by the current user or maybe ?createdBy=me
 */
+// Job Routes
 app.get("/jobs", getAllJobs);
-app.get("/jobs/my", isLoggedIn, getMyJobs); // Protected: needs user ID from token
-app.get("/jobs/:id", getJobById);
-app.post("/jobs", isLoggedIn, isRecruiter, createJob); // Protected: only recruiters
-app.get("/jobs/:id/matches", isLoggedIn, getJobMatches); // Manual trigger: top 5 matches
+app.get("/jobs/my", isLoggedIn, getMyJobs);              // ✅ specific first
+app.get("/jobs/:id/matches", isLoggedIn, getJobMatches); // ✅ more specific before :id
+app.get("/jobs/:id", getJobById);                        // ✅ generic last
+app.post("/jobs", isLoggedIn, isRecruiter, createJob);
 import { getMyAnalytics } from "./controllers/analytics.controller.js";
 
 // app.get("/jobs/:id/applications", isLoggedIn, getJobApplications);

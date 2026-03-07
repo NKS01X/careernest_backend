@@ -7,7 +7,7 @@ import * as qrcode from "qrcode";
 // Connect to your existing Render PostgreSQL
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }, // required for Render Postgres
+    ssl: { rejectUnauthorized: false },
 });
 
 const store = new PostgresStore({ pool });
@@ -17,14 +17,18 @@ export let isClientReady = false;
 export const client = new Client({
     authStrategy: new RemoteAuth({
         store: store,
-        backupSyncIntervalMs: 300000, // saves session every 5 mins
+        backupSyncIntervalMs: 300000,
     }),
     puppeteer: {
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
         headless: true,
         args: [
             "--no-sandbox",
             "--disable-setuid-sandbox",
             "--disable-dev-shm-usage",
+            "--disable-accelerated-2d-canvas",
+            "--no-first-run",
+            "--no-zygote",
             "--disable-gpu",
         ],
     },

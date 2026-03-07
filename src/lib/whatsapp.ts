@@ -1,9 +1,7 @@
 import pkg from "whatsapp-web.js";
 const { Client, LocalAuth } = pkg;
+import qrcode from "qrcode"; // npm install qrcode @types/qrcode
 
-/**
- * Singleton whatsapp-web.js client.
- */
 export let isClientReady = false;
 
 export const client = new Client({
@@ -19,13 +17,11 @@ export const client = new Client({
     },
 });
 
-import qrcode from "qrcode-terminal";
-
-/* ── lifecycle logging ─────────────────────────────────── */
-
-client.on("qr", (qr) => {
+client.on("qr", async (qr) => {
     console.log("[WhatsApp] Scan this QR code to authenticate:");
-    qrcode.generate(qr, { small: true });
+    const url = await qrcode.toDataURL(qr);
+    console.log("[WhatsApp] Copy the line below and paste it in your browser address bar, then scan:");
+    console.log(url); // data:image/png;base64,....
 });
 
 client.on("ready", () => {
@@ -46,7 +42,6 @@ client.on("disconnected", (reason) => {
     console.warn("[WhatsApp] Disconnected:", reason);
 });
 
-// Start initialization
 console.log("[WhatsApp] Initializing client...");
 client.initialize().catch(err => {
     console.error("[WhatsApp] Initialization failed:", err);

@@ -1,0 +1,38 @@
+[providers]
+node = true
+
+[variables]
+# Tell Puppeteer to use the system-installed Chromium on Railway
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+PUPPETEER_EXECUTABLE_PATH = "/usr/bin/chromium"
+NODE_ENV = "production"
+
+[phases.setup]
+# Install OpenSSL for Prisma and the Linux GUI libraries for Puppeteer
+aptPkgs = [
+    "chromium",
+    "ca-certificates",
+    "fonts-liberation",
+    "libnss3",
+    "libatk-bridge2.0-0",
+    "libx11-xcb1",
+    "libxcomposite1",
+    "libxrandr2",
+    "libgbm1",
+    "libasound2",
+    "libpangocairo-1.0-0",
+    "libgtk-3-0",
+    "openssl"
+]
+
+[phases.build]
+# Install dependencies, generate the Linux Prisma engine, and compile TypeScript
+cmds = [
+    "npm ci --include=dev",
+    "npx prisma generate",
+    "npm run build"
+]
+
+[start]
+# Start the compiled Express API
+cmd = "node dist/index.js"

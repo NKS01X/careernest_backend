@@ -40,7 +40,7 @@ app.get("/jobs/my", isLoggedIn, getMyJobs); // Protected: needs user ID from tok
 app.get("/jobs/:id", getJobById);
 app.post("/jobs", isLoggedIn, isRecruiter, createJob); // Protected: only recruiters
 app.get("/jobs/:id/matches", isLoggedIn, getJobMatches); // Manual trigger: top 5 matches
-
+// app.get("/jobs/:id/applications", isLoggedIn, getJobApplications);
 /*
 
 /jobs/:id/apply -> form request in future most probably only for the jobs created by the recruiters

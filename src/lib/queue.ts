@@ -5,7 +5,7 @@ export const jobMatchingQueue = new Queue("job-matching-queue", {
     connection: connection as any,
 });
 
-export const whatsappNotificationQueue = new Queue("whatsapp-notification-queue", {
+export const emailNotificationQueue = new Queue("email-notification-queue", {
     connection: connection as any,
     defaultJobOptions: {
         attempts: 3,

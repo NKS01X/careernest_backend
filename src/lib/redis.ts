@@ -27,8 +27,6 @@ const connection = new Redis(redisUrl, {
 connection.on("connect", () => {
     console.log("[Redis] Connected");
 
-    // Keep Upstash Redis warm to avoid cold start latency
-    // Pinging every 30 seconds (2880 pings/day, well within the 10k free tier limit)
     setInterval(() => {
         if (connection.status === "ready") {
             connection.ping().catch(() => { });

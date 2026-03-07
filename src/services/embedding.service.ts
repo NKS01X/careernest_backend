@@ -1,8 +1,3 @@
-/**
- * Generates a 768-dimensional vector embedding using Jina AI Embeddings API.
- * Model: jina-embeddings-v2-base-en (free, 1M tokens/month)
- * Requires: JINA_API_KEY in .env (free from https://jina.ai)
- */
 export async function generateEmbedding(text: string): Promise<number[]> {
     const jinaKey = process.env.JINA_API_KEY || "";
 

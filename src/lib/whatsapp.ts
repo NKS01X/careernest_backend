@@ -1,11 +1,24 @@
 import pkg from "whatsapp-web.js";
-const { Client, LocalAuth } = pkg;
-import qrcode from "qrcode"; // npm install qrcode @types/qrcode
+const { Client, RemoteAuth } = pkg;
+import { Pool } from "pg";
+import PostgresStore from "wwebjs-postgres";
+import * as qrcode from "qrcode";
+
+// Connect to your existing Render PostgreSQL
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }, // required for Render Postgres
+});
+
+const store = new PostgresStore({ pool });
 
 export let isClientReady = false;
 
 export const client = new Client({
-    authStrategy: new LocalAuth(),
+    authStrategy: new RemoteAuth({
+        store: store,
+        backupSyncIntervalMs: 300000, // saves session every 5 mins
+    }),
     puppeteer: {
         headless: true,
         args: [
@@ -18,10 +31,13 @@ export const client = new Client({
 });
 
 client.on("qr", async (qr) => {
-    console.log("[WhatsApp] Scan this QR code to authenticate:");
+    console.log("[WhatsApp] New QR received. Paste the line below into your browser address bar:");
     const url = await qrcode.toDataURL(qr);
-    console.log("[WhatsApp] Copy the line below and paste it in your browser address bar, then scan:");
-    console.log(url); // data:image/png;base64,....
+    console.log(url);
+});
+
+client.on("remote_session_saved", () => {
+    console.log("[WhatsApp] Session saved to PostgreSQL ✅ You won't need to scan again!");
 });
 
 client.on("ready", () => {

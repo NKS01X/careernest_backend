@@ -8,6 +8,8 @@
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
     "target": "esnext",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     // "types": [],
     // For nodejs:
     // "lib": ["esnext"],

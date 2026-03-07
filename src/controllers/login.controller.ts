@@ -8,7 +8,8 @@ dotenv.config();
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, pass } = req.body;
+    const { email } = req.body;
+    const pass = req.body.pass || req.body.password;
 
     if (!email || !pass) {
       return res.status(400).json({
@@ -17,8 +18,10 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
+    const normalizedEmail = email.toLowerCase();
+
     const user = await prisma.user.findUnique({
-      where: { email: email }
+      where: { email: normalizedEmail }
     }); //fetch from db 
 
     if (!user) {

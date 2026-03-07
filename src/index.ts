@@ -11,10 +11,15 @@ import { getJobMatches } from "./controllers/matches.controller.js";
 import { isRecruiter, isStudent } from "./middleware/role.js";
 import type { Application, Request, Response } from 'express';
 import { upload } from "./middleware/upload.js";
+import cors from "cors";
 
 dotenv.config();
 
 const app: Application = express();
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173", // Update with your frontend URL if different
+  credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 const PORT = process.env.PORT || 3000;

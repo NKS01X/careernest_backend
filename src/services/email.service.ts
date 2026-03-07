@@ -1,16 +1,12 @@
-import nodemailer from "nodemailer";
+import { BrevoClient } from "@getbrevo/brevo";
 
 interface EmailResult {
     success: boolean;
     messageId: string;
 }
 
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
+const brevo = new BrevoClient({
+    apiKey: process.env.BREVO_API_KEY!,
 });
 
 export async function sendEmail(
@@ -19,22 +15,25 @@ export async function sendEmail(
     text: string,
     html?: string
 ): Promise<EmailResult> {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.warn("[EmailService] EMAIL_USER or EMAIL_PASS not set. Email not sent.");
+    if (!process.env.BREVO_API_KEY) {
+        console.warn("[EmailService] BREVO_API_KEY not set. Email not sent.");
         return { success: false, messageId: "" };
     }
 
     try {
-        const info = await transporter.sendMail({
-            from: `"CareerNest" <${process.env.EMAIL_USER}>`,
-            to,
+        const response = await brevo.transactionalEmails.sendTransacEmail({
+            sender: {
+                email: process.env.EMAIL_FROM ?? "nikhilsingh9b21@gmail.com",
+                name: "CareerNest",
+            },
+            to: [{ email: to }],
             subject,
-            text,
-            html,
+            textContent: text,
+            ...(html && { htmlContent: html }),
         });
 
-        console.log(`[EmailService] Email sent to ${to} | ID: ${info.messageId}`);
-        return { success: true, messageId: info.messageId };
+        console.log(`[EmailService] Email sent to ${to} | ID: ${response.messageId}`);
+        return { success: true, messageId: response.messageId ?? "" };
     } catch (error) {
         console.error(`[EmailService] Send Error for ${to}:`, error);
         return { success: false, messageId: "" };

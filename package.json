@@ -19,6 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@getbrevo/brevo": "^4.0.1",
     "@huggingface/inference": "^4.13.14",
     "@prisma/client": "^6.19.2",
     "@types/qrcode": "^1.5.6",
